@@ -3,6 +3,7 @@ package views
 import (
 	"html/template"
 	"path/filepath"
+	"net/http"
 )
 
 func getAlltemplateFiles() []string{
@@ -11,6 +12,10 @@ func getAlltemplateFiles() []string{
 		panic(err)
 	}
 	return files
+}
+
+func (view *View) Render(w http.ResponseWriter, data interface{}) error{
+	return view.Template.ExecuteTemplate(w, view.Layout, data)
 }
 
 func NewView(layout string, files ...string) *View {
