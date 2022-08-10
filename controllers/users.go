@@ -23,5 +23,10 @@ func (u *Users) New(w http.ResponseWriter, r *http.Request){
 
 func (u *Users) Create(w http.ResponseWriter, r *http.Request){
 	fmt.Println("Hello we are here")
-	fmt.Fprintln(w, "Consider that the user has been created")
+	// fmt.Fprintln(w, "Consider that the user has been created")
+	err := r.ParseForm()
+	if err != nil{
+		panic(err)
+	}
+	fmt.Fprintln(w, r.PostFormValue("email") + " " + r.PostFormValue("password"))
 }
