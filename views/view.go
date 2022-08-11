@@ -14,6 +14,13 @@ func getAlltemplateFiles() []string{
 	return files
 }
 
+func (v *View) ServeHTTP(w http.ResponseWriter, r *http.Request){
+	err := v.Render(w, nil)
+	if err != nil{
+		panic(err)
+	}
+}
+
 func (view *View) Render(w http.ResponseWriter, data interface{}) error{
 	return view.Template.ExecuteTemplate(w, view.Layout, data)
 }

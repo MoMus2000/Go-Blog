@@ -22,7 +22,6 @@ type SignupForm struct{
 }
 
 func (u *Users) New(w http.ResponseWriter, r *http.Request){
-	fmt.Println("HOLAAA")
 	u.NewView.Render(w, nil)
 }
 
