@@ -23,6 +23,10 @@ func NewUserService(connectionInfo string) (*UserService, error){
 	return &UserService{db: db}, nil
 }
 
+func (us *UserService) Create(u *User) error{
+	return us.db.Create(u).Error
+}
+
 
 func (us *UserService) DestructiveReset(){
 	us.db.DropTableIfExists(&User{})

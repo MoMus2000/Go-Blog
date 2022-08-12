@@ -2,26 +2,36 @@ package main
 
 import(
 	"fmt"
-	"github.com/jinzhu/gorm"
-	_"github.com/jinzhu/gorm/dialects/sqlite"
+	// "github.com/jinzhu/gorm"
+	// _"github.com/jinzhu/gorm/dialects/sqlite"
 	"os"
 	"bufio"
 	"strings"
 	"learn_go/models"
 )
 
-type User struct{
-	gorm.Model
-	Name string
-	Email string `gorm:"not null;unique_index"`
-}
+// type User struct{
+// 	gorm.Model
+// 	Name string
+// 	Email string `gorm:"not null;unique_index"`
+// }
 
 func main(){
 	fmt.Println("Connecting...")
 
 	us, _ := models.NewUserService("../db/lenslocked_dev.db")
 
-	us.DestructiveReset()
+	// us.DestructiveReset()
+
+	var user models.User
+	user.Name = "Michael Scott"
+	user.Email = "michael@dms.com"
+
+	err := us.Create(&user)
+
+	if err != nil{
+		fmt.Println(err)
+	}
 
 	fmt.Println(us.ByID(1))
 	
