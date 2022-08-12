@@ -7,6 +7,7 @@ import(
 	"os"
 	"bufio"
 	"strings"
+	"learn_go/models"
 )
 
 type User struct{
@@ -17,24 +18,34 @@ type User struct{
 
 func main(){
 	fmt.Println("Connecting...")
-	db, err := gorm.Open("sqlite3", "../db/lenslocked_dev.db")
-	if err != nil{
-		panic(err)
-	}
 
-	db.LogMode(true)
-	fmt.Println("Connected...")
-	db.AutoMigrate(&User{})
+	us, _ := models.NewUserService("../db/lenslocked_dev.db")
 
-	name, email := getInfo()
-	user := User{Name:name, Email:email}
-	fmt.Println(user)
+	us.DestructiveReset()
 
-	if err = db.Create(&user).Error
+	fmt.Println(us.ByID(1))
+	
+	us.Close()
 
-	err != nil{
-		panic(err)
-	}
+
+	// db, err := gorm.Open("sqlite3", "../db/lenslocked_dev.db")
+	// if err != nil{
+	// 	panic(err)
+	// }
+
+	// db.LogMode(true)
+	// fmt.Println("Connected...")
+	// db.AutoMigrate(&User{})
+
+	// name, email := getInfo()
+	// user := User{Name:name, Email:email}
+	// fmt.Println(user)
+
+	// if err = db.Create(&user).Error
+
+	// err != nil{
+	// 	panic(err)
+	// }
 }
 
 
