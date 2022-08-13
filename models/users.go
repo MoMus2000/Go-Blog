@@ -8,6 +8,7 @@ import(
 )
 
 var ErrNotFound = errors.New("models: resource not found")
+var InvalidId = errors.New("id provided was invalid")
 
 type UserService struct{
 	db *gorm.DB
@@ -27,6 +28,36 @@ func (us *UserService) Create(u *User) error{
 	return us.db.Create(u).Error
 }
 
+func (us *UserService) Update(u *User) error{
+	return us.db.Save(u).Error
+}
+
+func (us *UserService) ByEmail(email string) (*User, error){
+	var user User
+
+	db := us.db.Where("email = ?", email)
+	err := first(db, &user)
+
+	return &user, err	
+}
+
+func (us *UserService) Delete (id uint) error{
+	if id == 0{
+		return InvalidId
+	}
+
+	user := User{Model:gorm.Model{ID:id}}
+	return us.db.Delete(&user).Error
+}
+
+func first(db *gorm.DB, dst interface{}) error{
+	err := db.First(dst).Error
+	if err == gorm.ErrRecordNotFound {
+		return ErrNotFound
+	}
+	return err
+}
+
 
 func (us *UserService) DestructiveReset(){
 	us.db.DropTableIfExists(&User{})
@@ -40,15 +71,9 @@ func (us *UserService) DestructiveReset(){
 // case 3 - nil, otherError 
 func (us *UserService) ByID(id uint) (*User, error){
 	var user User
-	err := us.db.Where("id = ?", id).First(&user).Error
-	switch err{
-	case nil:
-		return &user, nil
-	case gorm.ErrRecordNotFound:
-		return nil, ErrNotFound
-	default:
-		return nil, err
-	}
+	db := us.db.Where("id = ?", id)
+	err := first(db, &user)
+	return &user, err
 }
 
 func (us *UserService) Close() error{

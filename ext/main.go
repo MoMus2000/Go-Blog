@@ -21,7 +21,7 @@ func main(){
 
 	us, _ := models.NewUserService("../db/lenslocked_dev.db")
 
-	// us.DestructiveReset()
+	us.DestructiveReset()
 
 	var user models.User
 	user.Name = "Michael Scott"
@@ -34,6 +34,20 @@ func main(){
 	}
 
 	fmt.Println(us.ByID(1))
+
+	user.Email = "michael@scottpaperco.com"
+
+	err = us.Update(&user)
+
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(us.ByID(1))
+
+	fmt.Println(us.ByEmail("michael@scottpaperco.com"))
+
+	us.Delete(1)
 	
 	us.Close()
 
