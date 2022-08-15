@@ -3,11 +3,14 @@ import (
     "github.com/gorilla/mux"
     "net/http"
     "learn_go/controllers"
+    "learn_go/models"
 )
 
 func main(){
     r := mux.NewRouter()
-    userC := controllers.NewUser()
+    us, _ := models.NewUserService("./db/lenslocked_dev.db")
+
+    userC := controllers.NewUser(us)
     staticC := controllers.NewStaticView()
     
     r.Handle("/", staticC.HomeView).Methods("GET")

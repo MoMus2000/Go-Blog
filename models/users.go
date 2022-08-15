@@ -59,11 +59,21 @@ func first(db *gorm.DB, dst interface{}) error{
 }
 
 
-func (us *UserService) DestructiveReset(){
-	us.db.DropTableIfExists(&User{})
-	us.db.AutoMigrate(&User{})
+func (us *UserService) DestructiveReset() error{ 
+	error := us.db.DropTableIfExists(&User{}).Error
+	if error != nil {
+		return error
+	}
+	return us.AutoMigrate()
 }
 
+func (us *UserService) AutoMigrate() error{
+	err = us.db.AutoMigrate(&User{}).Error
+	if error != nil{
+		panic(err)
+	}
+	return nil
+}
 
 // ByID will look up user by the id provided
 // case 1 - user, nil
