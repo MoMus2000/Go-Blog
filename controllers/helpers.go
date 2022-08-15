@@ -6,7 +6,7 @@ import (
 	"fmt"
 )
 
-func parseRequestForm(r *http.Request, form *SignupForm) error{
+func parseRequestForm(r *http.Request, form interface{}) error{
 	err := r.ParseForm()
 
 	if err != nil {
