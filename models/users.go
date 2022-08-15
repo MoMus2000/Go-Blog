@@ -5,15 +5,17 @@ import(
 	"github.com/jinzhu/gorm"
 	_"github.com/jinzhu/gorm/dialects/sqlite"
 	"errors"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var ErrNotFound = errors.New("models: resource not found")
 var InvalidId = errors.New("id provided was invalid")
 
+const passwordPepper = "Salt&Peppa"
+
 type UserService struct{
 	db *gorm.DB
 }
-
 
 func NewUserService(connectionInfo string) (*UserService, error){
 	db, err:= gorm.Open("sqlite3", connectionInfo)
@@ -25,6 +27,16 @@ func NewUserService(connectionInfo string) (*UserService, error){
 }
 
 func (us *UserService) Create(u *User) error{
+	pwBytes := []byte(u.Password + passwordPepper)
+	hashedBytes, error := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
+
+	if error != nil{
+		panic(error)
+	}
+
+	u.PasswordHash = string(hashedBytes)
+	u.Password = ""
+
 	return us.db.Create(u).Error
 }
 
@@ -39,6 +51,22 @@ func (us *UserService) ByEmail(email string) (*User, error){
 	err := first(db, &user)
 
 	return &user, err	
+}
+
+func (us *UserService) Authenticate(email string, password string) (*User, error){
+	foundUser, error := us.ByEmail(email)
+
+	if error != nil {
+		return nil, error
+	}
+
+	err := bcrypt.CompareHashAndPassword([]byte(foundUser.PasswordHash), []byte(password + passwordPepper))
+
+	if err != nil{
+		return nil, err
+	}
+
+	return foundUser, nil
 }
 
 func (us *UserService) Delete (id uint) error{
@@ -90,9 +118,10 @@ func (us *UserService) Close() error{
 	return us.db.Close()
 }
 
-
 type User struct{
 	gorm.Model
 	Name string
 	Email string `gorm:"not null;unique_index"`
+	Password string `gorm:"-"`
+	PasswordHash string `gorm:"not_null"`
 }
