@@ -68,9 +68,9 @@ func (us *UserService) DestructiveReset() error{
 }
 
 func (us *UserService) AutoMigrate() error{
-	err = us.db.AutoMigrate(&User{}).Error
-	if error != nil{
-		panic(err)
+	err := us.db.AutoMigrate(&User{}).Error
+	if err != nil{
+		return err
 	}
 	return nil
 }
