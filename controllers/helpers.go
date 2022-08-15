@@ -23,5 +23,7 @@ func parseRequestForm(r *http.Request, form *SignupForm) error{
 		panic(err)
 	}
 
+	fmt.Println("Parsed the form !")
+
 	return nil
 }
