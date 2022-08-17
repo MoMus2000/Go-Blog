@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"fmt"
 	"learn_go/models"
+	"learn_go/rand"
 )
 
 func NewUser(us *models.UserService) *Users{
@@ -59,6 +60,14 @@ func (u *Users) Create(w http.ResponseWriter, r *http.Request){
 	}
 	
 	fmt.Println(form)
+
+	err = u.SignIn(w, &user)
+
+	if err != nil {
+		panic(err)
+	}
+
+	http.Redirect(w, r, "/cookie", http.StatusFound)
 }
 
 func (u *Users) Login(w http.ResponseWriter, r *http.Request){
@@ -75,5 +84,49 @@ func (u *Users) Login(w http.ResponseWriter, r *http.Request){
 		panic(error)
 	}
 
-	fmt.Fprintln(w, user)
+	err = u.SignIn(w, user)
+
+	if err != nil{
+		panic(err)
+	}
+
+	http.Redirect(w, r, "/cookie", http.StatusFound)
 } 
+
+func (u *Users) SignIn(w http.ResponseWriter, user *models.User) error{
+	if user.Remember == ""{
+		token, err := rand.RememberToken()
+		if err != nil{
+			panic(err)
+		}
+		user.Remember = token
+
+		err = u.us.Update(user)
+	}
+	cookie := http.Cookie{ 
+		Name: "remember_token",
+		Value: user.Remember,
+	}
+
+	http.SetCookie(w, &cookie)
+
+	return nil
+}
+
+func (u *Users) CookieTest(w http.ResponseWriter, r *http.Request){
+	cookie, err := r.Cookie("remember_token")
+
+	if err != nil{
+		panic(err)
+	}
+
+	fmt.Fprintln(w, cookie)
+
+	user, err := u.us.ByRememberToken(cookie.Value)
+
+	if err != nil{
+		panic(err)
+	}
+
+	fmt.Println(w, user)
+}

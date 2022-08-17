@@ -10,7 +10,7 @@ func main(){
     r := mux.NewRouter()
     us, _ := models.NewUserService("./db/lenslocked_dev.db")
 
-    us.AutoMigrate()
+    us.DestructiveReset()
 
     userC := controllers.NewUser(us)
     staticC := controllers.NewStaticView()
@@ -23,6 +23,8 @@ func main(){
 
     r.Handle("/login", userC.LoginView).Methods("GET")
     r.HandleFunc("/login", userC.Login).Methods("POST")
+
+    r.HandleFunc("/cookie", userC.CookieTest).Methods("GET")
 
     http.ListenAndServe(":3000", r)
 }

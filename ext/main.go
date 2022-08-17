@@ -7,7 +7,9 @@ import(
 	"os"
 	"bufio"
 	"strings"
-	"learn_go/models"
+	// "learn_go/models"
+	"learn_go/rand"
+	"learn_go/hash"
 )
 
 // type User struct{
@@ -17,39 +19,47 @@ import(
 // }
 
 func main(){
-	fmt.Println("Connecting...")
+	fmt.Println(rand.String(32))
+	fmt.Println(rand.RememberToken())
 
-	us, _ := models.NewUserService("../db/lenslocked_dev.db")
+	h := hash.NewHMAC("mustafa")
+	fmt.Println(h.Hash("Hash it"))
+	fmt.Println(h.Hash("Hashit"))
+	fmt.Println(h.Hash("Hash it"))
 
-	us.DestructiveReset()
+	// fmt.Println("Connecting...")
 
-	var user models.User
-	user.Name = "Michael Scott"
-	user.Email = "michael@dms.com"
+	// us, _ := models.NewUserService("../db/lenslocked_dev.db")
 
-	err := us.Create(&user)
+	// us.DestructiveReset()
 
-	if err != nil{
-		fmt.Println(err)
-	}
+	// var user models.User
+	// user.Name = "Michael Scott"
+	// user.Email = "michael@dms.com"
 
-	fmt.Println(us.ByID(1))
+	// err := us.Create(&user)
 
-	user.Email = "michael@scottpaperco.com"
+	// if err != nil{
+	// 	fmt.Println(err)
+	// }
 
-	err = us.Update(&user)
+	// fmt.Println(us.ByID(1))
 
-	if err != nil {
-		panic(err)
-	}
+	// user.Email = "michael@scottpaperco.com"
 
-	fmt.Println(us.ByID(1))
+	// err = us.Update(&user)
 
-	fmt.Println(us.ByEmail("michael@scottpaperco.com"))
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	us.Delete(1)
+	// fmt.Println(us.ByID(1))
+
+	// fmt.Println(us.ByEmail("michael@scottpaperco.com"))
+
+	// us.Delete(1)
 	
-	us.Close()
+	// us.Close()
 
 
 	// db, err := gorm.Open("sqlite3", "../db/lenslocked_dev.db")
