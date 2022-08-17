@@ -10,7 +10,7 @@ func main(){
     r := mux.NewRouter()
     us, _ := models.NewUserService("./db/lenslocked_dev.db")
 
-    us.DestructiveReset()
+    us.AutoMigrate()
 
     userC := controllers.NewUser(us)
     staticC := controllers.NewStaticView()
