@@ -6,15 +6,19 @@ import(
 	_"github.com/jinzhu/gorm/dialects/sqlite"
 	"errors"
 	"golang.org/x/crypto/bcrypt"
+	"learn_go/hash"
+	"learn_go/rand"
 )
 
 var ErrNotFound = errors.New("models: resource not found")
 var InvalidId = errors.New("id provided was invalid")
 
 const passwordPepper = "Salt&Peppa"
+const secretKey = "secret-key"
 
 type UserService struct{
 	db *gorm.DB
+	hmac hash.HMAC
 }
 
 func NewUserService(connectionInfo string) (*UserService, error){
@@ -23,7 +27,11 @@ func NewUserService(connectionInfo string) (*UserService, error){
 		return nil, err
 	}
 	db.LogMode(true)
-	return &UserService{db: db}, nil
+	hmac := hash.NewHMAC(secretKey)
+	return &UserService{
+		db: db,
+		hmac : hmac,
+	}, nil
 }
 
 func (us *UserService) Create(u *User) error{
@@ -37,10 +45,23 @@ func (us *UserService) Create(u *User) error{
 	u.PasswordHash = string(hashedBytes)
 	u.Password = ""
 
+	if u.Remember == "" {
+		token, err := rand.RememberToken()
+		if err != nil{
+			return err
+		}
+		u.Remember = token
+	}
+
+	u.RememberHash = us.hmac.Hash(u.Remember)
+
 	return us.db.Create(u).Error
 }
 
 func (us *UserService) Update(u *User) error{
+	if u.Remember != "" {
+		u.RememberHash = us.hmac.Hash(u.RememberHash)
+	}
 	return us.db.Save(u).Error
 }
 
@@ -51,6 +72,14 @@ func (us *UserService) ByEmail(email string) (*User, error){
 	err := first(db, &user)
 
 	return &user, err	
+}
+
+func (us *UserService) ByRememberToken(token string) (*User, error){
+	var user User
+	hashedToken := us.hmac.Hash(token)
+	db := us.db.Where("remember_hash = ?", hashedToken)
+	err := first(db, &user)
+	return &user, err
 }
 
 func (us *UserService) Authenticate(email string, password string) (*User, error){
@@ -124,4 +153,6 @@ type User struct{
 	Email string `gorm:"not null;unique_index"`
 	Password string `gorm:"-"`
 	PasswordHash string `gorm:"not_null"`
+	Remember string `gorm:""`
+	RememberHash string `gorm:"not_null;unique_index"`
 }
