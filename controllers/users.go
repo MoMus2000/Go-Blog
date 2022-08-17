@@ -97,7 +97,7 @@ func (u *Users) SignIn(w http.ResponseWriter, user *models.User) error{
 	if user.Remember == ""{
 		token, err := rand.RememberToken()
 		if err != nil{
-			panic(err)
+ 			return err
 		}
 		user.Remember = token
 
@@ -120,12 +120,15 @@ func (u *Users) CookieTest(w http.ResponseWriter, r *http.Request){
 		panic(err)
 	}
 
+	fmt.Println(cookie)
+
 	fmt.Fprintln(w, cookie)
 
 	user, err := u.us.ByRememberToken(cookie.Value)
 
 	if err != nil{
-		panic(err)
+		fmt.Fprintln(w, user)
+		fmt.Fprintln(w, "Resource not found")
 	}
 
 	fmt.Println(w, user)

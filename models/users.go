@@ -60,7 +60,7 @@ func (us *UserService) Create(u *User) error{
 
 func (us *UserService) Update(u *User) error{
 	if u.Remember != "" {
-		u.RememberHash = us.hmac.Hash(u.RememberHash)
+		u.RememberHash = us.hmac.Hash(u.Remember)
 	}
 	return us.db.Save(u).Error
 }
@@ -153,6 +153,6 @@ type User struct{
 	Email string `gorm:"not null;unique_index"`
 	Password string `gorm:"-"`
 	PasswordHash string `gorm:"not_null"`
-	Remember string `gorm:""`
+	Remember string `gorm:"-"`
 	RememberHash string `gorm:"not_null;unique_index"`
 }
