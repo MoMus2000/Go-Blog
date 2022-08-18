@@ -3,29 +3,34 @@ package main
 import(
 	"fmt"
 	// "github.com/jinzhu/gorm"
-	// _"github.com/jinzhu/gorm/dialects/sqlite"
-	"os"
-	"bufio"
-	"strings"
-	// "learn_go/models"
-	"learn_go/rand"
-	"learn_go/hash"
+	// // _"github.com/jinzhu/gorm/dialects/sqlite"
+	// "os"
+	// "bufio"
+	// "strings"
+	// // "learn_go/models"
+	// "learn_go/rand"
+	// "learn_go/hash"
 )
 
-// type User struct{
-// 	gorm.Model
-// 	Name string
-// 	Email string `gorm:"not null;unique_index"`
-// }
-
 func main(){
-	fmt.Println(rand.String(32))
-	fmt.Println(rand.RememberToken())
+	fmt.Println("Hello")
 
-	h := hash.NewHMAC("mustafa")
-	fmt.Println(h.Hash("Hash it"))
-	fmt.Println(h.Hash("Hashit"))
-	fmt.Println(h.Hash("Hash it"))
+	// db := &gorm.DB{}
+
+	// us := UserService{
+	// 	uv: userValidator{
+	// 		ug: userGorm{
+	// 			db: db
+	// 		}
+	// 	}
+	// }
+	// fmt.Println(rand.String(32))
+	// fmt.Println(rand.RememberToken())
+
+	// h := hash.NewHMAC("mustafa")
+	// fmt.Println(h.Hash("Hash it"))
+	// fmt.Println(h.Hash("Hashit"))
+	// fmt.Println(h.Hash("Hash it"))
 
 	// fmt.Println("Connecting...")
 
@@ -83,13 +88,13 @@ func main(){
 }
 
 
-func getInfo() (name, email string){
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Println("What is your name?")
-	name, _ = reader.ReadString('\n')
-	fmt.Println("What is your email address?")
-	email, _ = reader.ReadString('\n')
-	email = strings.TrimSpace(email)
-	name = strings.TrimSpace(name)
-	return name, email
-}
+// func getInfo() (name, email string){
+// 	reader := bufio.NewReader(os.Stdin)
+// 	fmt.Println("What is your name?")
+// 	name, _ = reader.ReadString('\n')
+// 	fmt.Println("What is your email address?")
+// 	email, _ = reader.ReadString('\n')
+// 	email = strings.TrimSpace(email)
+// 	name = strings.TrimSpace(name)
+// 	return name, email
+// }

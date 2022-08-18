@@ -21,6 +21,31 @@ type UserService struct{
 	hmac hash.HMAC
 }
 
+type UserDB interface{
+	ByID(id uint) (*User, error)
+	ByEmail(email string) (*User, error)
+	ByRememberToken(token string) (*User, error)
+
+	// Methods for altering users
+	Create(user *User) (error)
+	Update(user *User) (error)
+	Delete(id uint) (error)
+
+	Close() (error)
+
+	AutoMigrate() error
+	DestructiveReset() error
+}
+
+
+// compilation test to see if userGorm implements all the methods for the interface
+var _ UserDB = &userGorm{}
+
+type userGorm struct{
+	db *gorm.DB
+	hamc hash.HMAC
+}
+
 func NewUserService(connectionInfo string) (*UserService, error){
 	db, err:= gorm.Open("sqlite3", connectionInfo)
 	if err != nil{
@@ -34,7 +59,20 @@ func NewUserService(connectionInfo string) (*UserService, error){
 	}, nil
 }
 
-func (us *UserService) Create(u *User) error{
+func NewGormService(connectionInfo string) (*userGorm, error){
+	db, err := gorm.Open("sqlite3", connectionInfo)
+	if err != nil {
+		return nil , error
+	}
+	db.LogMode(true)
+	hmac := hash.NewHMAC(secretKey)
+	return &userGorm{
+		db: db,
+		hmac: hmac
+	}, nil
+}
+
+func (ug *userGorm) Create(u *User) error{
 	pwBytes := []byte(u.Password + passwordPepper)
 	hashedBytes, error := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
 
@@ -53,31 +91,31 @@ func (us *UserService) Create(u *User) error{
 		u.Remember = token
 	}
 
-	u.RememberHash = us.hmac.Hash(u.Remember)
+	u.RememberHash = ug.hmac.Hash(u.Remember)
 
-	return us.db.Create(u).Error
+	return ug.db.Create(u).Error
 }
 
-func (us *UserService) Update(u *User) error{
+func (ug *userGorm) Update(u *User) error{
 	if u.Remember != "" {
-		u.RememberHash = us.hmac.Hash(u.Remember)
+		u.RememberHash = ug.hmac.Hash(u.Remember)
 	}
-	return us.db.Save(u).Error
+	return ug.db.Save(u).Error
 }
 
-func (us *UserService) ByEmail(email string) (*User, error){
+func (ug *userGorm) ByEmail(email string) (*User, error){
 	var user User
 
-	db := us.db.Where("email = ?", email)
+	db := ug.db.Where("email = ?", email)
 	err := first(db, &user)
 
 	return &user, err	
 }
 
-func (us *UserService) ByRememberToken(token string) (*User, error){
+func (ug *userGorm) ByRememberToken(token string) (*User, error){
 	var user User
-	hashedToken := us.hmac.Hash(token)
-	db := us.db.Where("remember_hash = ?", hashedToken)
+	hashedToken := ug.hmac.Hash(token)
+	db := ug.db.Where("remember_hash = ?", hashedToken)
 	err := first(db, &user)
 	return &user, err
 }
@@ -98,13 +136,13 @@ func (us *UserService) Authenticate(email string, password string) (*User, error
 	return foundUser, nil
 }
 
-func (us *UserService) Delete (id uint) error{
+func (ug *userGorm) Delete (id uint) error{
 	if id == 0{
 		return InvalidId
 	}
 
 	user := User{Model:gorm.Model{ID:id}}
-	return us.db.Delete(&user).Error
+	return ug.db.Delete(&user).Error
 }
 
 func first(db *gorm.DB, dst interface{}) error{
@@ -116,16 +154,16 @@ func first(db *gorm.DB, dst interface{}) error{
 }
 
 
-func (us *UserService) DestructiveReset() error{ 
-	error := us.db.DropTableIfExists(&User{}).Error
+func (ug *userGorm) DestructiveReset() error{ 
+	error := ug.db.DropTableIfExists(&User{}).Error
 	if error != nil {
 		return error
 	}
-	return us.AutoMigrate()
+	return ug.AutoMigrate()
 }
 
-func (us *UserService) AutoMigrate() error{
-	err := us.db.AutoMigrate(&User{}).Error
+func (ug *userGorm) AutoMigrate() error{
+	err := ug.db.AutoMigrate(&User{}).Error
 	if err != nil{
 		return err
 	}
@@ -136,15 +174,15 @@ func (us *UserService) AutoMigrate() error{
 // case 1 - user, nil
 // case 2 - nil, ErrNotFound
 // case 3 - nil, otherError 
-func (us *UserService) ByID(id uint) (*User, error){
+func (ug *userGorm) ByID(id uint) (*User, error){
 	var user User
-	db := us.db.Where("id = ?", id)
+	db := ug.db.Where("id = ?", id)
 	err := first(db, &user)
 	return &user, err
 }
 
-func (us *UserService) Close() error{
-	return us.db.Close()
+func (ug *userGorm) Close() error{
+	return ug.db.Close()
 }
 
 type User struct{
